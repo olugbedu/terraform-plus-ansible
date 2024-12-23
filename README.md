@@ -23,6 +23,4 @@ Cloud provider CLI (AWS CLI, Azure CLI, etc.) if applicable.
 ### Contributions:
 Contributions are welcome! Submit an issue or a pull request to suggest improvements, report bugs, or add features.
 
-License: MIT License
-
 Feel free to modify this to suit the specific goals and content of your project.
