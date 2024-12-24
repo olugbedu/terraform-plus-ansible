@@ -1,0 +1,9 @@
+- name: Set up webservers
+  hosts: webservers
+  become: true
+  vars_files:
+    - vars.yaml
+  roles:
+    - setup-webservers
+    - deploy-app
+    - nginx-setup

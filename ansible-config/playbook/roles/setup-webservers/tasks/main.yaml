@@ -1,0 +1,42 @@
+- name: Add NodeSource repository for Node.js
+  ansible.builtin.shell: |
+    curl -fsSL https://deb.nodesource.com/setup_{{ node_version }}.x | bash -
+  args:
+    creates: /etc/apt/sources.list.d/nodesource.list
+
+- name: Install necessary packages
+  ansible.builtin.apt:
+    update_cache: true
+    name:
+      - curl
+      - git
+      - nginx
+      - rsync
+      - build-essential
+      - nodejs
+      - certbot
+      - python3-certbot-nginx
+    state: present
+
+- name: Start Nginx
+  service:
+    name: nginx
+    state: started
+    enabled: yes
+
+- name: Install pnpm
+  ansible.builtin.command: npm install -g pnpm
+  args: 
+    creates: /usr/local/bin/pnpm
+
+- name: Show installed versions
+  ansible.builtin.shell: |
+    echo "Nodejs version: $(node -v)"
+    echo "Nginx version: $(nginx -v)"
+    echo "Python3 version: $(python3 --version)"
+    echo "Git version: $(git -v)"
+    echo "Certbot version: $(certbot --version)"
+
+- name: Display versions
+  debug:
+    var: versions.stdout_lines

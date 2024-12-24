@@ -1,0 +1,8 @@
+app_dir: "{{ lookup('env', 'APP_DIR') }}"
+app_name: "{{ lookup('env', 'APP_NAME') }}"
+app_user: "{{ lookup('env', 'APP_USER') }}"
+domain_name: "{{ lookup('env', 'DOMAIN_NAME') }}"
+repository: "{{ lookup('env', 'REPOSITORY') }}"
+node_version: "{{ lookup('env', 'NODE_VERSION') }}"
+build_dir: "{{ lookup('env', 'BUILD_DIR') }}"
+cert_email: "{{ lookup('env', 'CERT_EMAIL') }}"

@@ -1,0 +1,57 @@
+- name: Check if Nginx site config exists
+  ansible.builtin.stat:
+    path: /etc/nginx/sites-available/{{ app_name }} # this parameter originally '{{ domain_name }}' but changed to '{{ app_name }}' because no AAA sub-domain was created
+  register: nginx_site_stat
+
+- name: Create Nginx configuration for the app
+  ansible.builtin.template:
+    src: nginx.conf.j2
+    dest: /etc/nginx/sites-available/{{ app_name }}
+  when: not nginx_site_stat.stat.exists or nginx_site_stat.changed
+  register: create_config
+
+- name: Enable the new site
+  ansible.builtin.file:
+    src: /etc/nginx/sites-available/{{ app_name }}
+    dest: /etc/nginx/sites-enabled/{{ app_name }}
+    state: link
+
+# - name: Check if SSL certificate exists
+#   ansible.builtin.stat:
+#     path: /etc/letsencrypt/live/{{ domain_name }}/fullchain.pem
+#   register: ssl_cert_stat
+
+# - name: Install existing SSL certificate
+#   ansible.builtin.shell: "certbot install --nginx --cert-name {{ domain_name }} --non-interactive"
+#   become: true
+
+# - name: Obtain SSL certificate using Certbot
+#   ansible.builtin.shell: "certbot --nginx -d {{ domain_name }} --non-interactive --agree-tos --email {{ cert_email }}"
+#   become: true
+#   when: not ssl_cert_stat.stat.exists and create_config.changed
+#   register: certbot_ssl
+
+- name: Test Nginx configuration
+  ansible.builtin.command: nginx -t
+  notify: Reload Nginx
+
+# - name: Check deployment by curling domain
+#   ansible.builtin.uri:
+#     url: "https://{{ domain_name }}"
+#     method: GET
+#     status_code: 200
+#     timeout: 30
+#   register: deployment_check
+#   retries: 3
+#   delay: 5
+#   until: deployment_check.status == 200
+
+# - name: Display deployment check result
+#   ansible.builtin.debug:
+#     msg: "Deployment successful. Status code: {{ deployment_check.status }}"
+#   when: deployment_check.status == 200
+
+# - name: Fail if deployment check fails
+#   ansible.builtin.fail:
+#     msg: "Deployment check failed. Unable to reach {{ domain_name }}"
+#   when: deployment_check.status != 200

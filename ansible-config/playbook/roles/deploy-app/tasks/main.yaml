@@ -1,0 +1,56 @@
+- name: Create app directory
+  ansible.builtin.file:
+    path: "{{ app_dir }}"
+    state: directory
+  become: true
+
+- name: Set directory permissions
+  ansible.builtin.file:
+    path: "{{ app_dir }}"
+    state: directory
+    owner: "{{ app_user }}"
+    group: "{{ app_user }}"
+    mode: "0775"
+    recurse: yes
+  become: true
+
+- name: Ensure repository is cloned or updated
+  ansible.builtin.git:
+    repo: "{{ repository }}"
+    dest: "{{ build_dir }}"
+    version: ft-demo
+    clone: yes
+    update: yes
+    force: yes
+    depth: 1
+  become: true
+
+- name: Install dependencies
+  ansible.builtin.command: pnpm install
+  args: 
+    chdir: "{{ build_dir }}"
+
+- name: Build app
+  ansible.builtin.command: pnpm run build
+  args:
+    chdir: "{{ build_dir }}"
+
+- name: Rsync the build output to app directory
+  ansible.builtin.shell: |
+    rsync -av --delete "{{ build_dir }}/out/" "{{ app_dir }}/"
+  become: true
+
+- name: Set correct permissions for the app directory
+  ansible.builtin.file:
+    path: "{{ app_dir }}"
+    owner: "{{ app_user }}"
+    group: "{{ app_user }}"
+    state: directory
+    recurse: yes
+  become: true
+
+- name: Delete build directory
+  ansible.builtin.file:
+    path: "{{ build_dir }}"
+    state: absent
+  become: true
